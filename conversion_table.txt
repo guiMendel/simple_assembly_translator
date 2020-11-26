@@ -14,9 +14,9 @@ DIV @rot {
 }
 
 JMP @rot =
-JMPN @rot > JG, @rot
-JMPP @rot > JL, @rot
-JMPZ @rot > JZ, @rot
+JMPN @rot > JG @rot
+JMPP @rot > JL @rot
+JMPZ @rot > JZ @rot
 
 LOAD @rot > MOV eax, [@rot]
 STORE @rot > MOV DWORD [@rot], eax
@@ -25,12 +25,32 @@ COPY @a, @b {
     MOV DWORD [@b], ebx
 }
 
-INPUT @rot > 
-OUTPUT @rot > 
-C_INPUT @rot > 
-C_OUTPUT @rot > 
-S_INPUT @rot > 
-S_OUTPUT @rot > 
+INPUT @rot {
+    PUSH DWORD @rot
+    CALL _INPUT
+}
+OUTPUT @rot {
+    PUSH DWORD @rot
+    CALL _OUTPUT
+}
+C_INPUT @rot {
+    PUSH DWORD @rot
+    CALL _C_INPUT
+}
+C_OUTPUT @rot {
+    PUSH DWORD @rot
+    CALL _C_OUTPUT
+}
+S_INPUT @rot, @size {
+    PUSH DWORD @size
+    PUSH DWORD @rot
+    CALL _S_INPUT
+}
+S_OUTPUT @rot, @size {
+    PUSH DWORD @size
+    PUSH DWORD @rot
+    CALL _S_OUTPUT
+}
 
 STOP {
     MOV eax, 1
@@ -40,3 +60,5 @@ STOP {
 
 SPACE @num > (BSS) RESD @num
 CONST @val > (DATA) DD @val
+
+# FALTA FAZER AS FUNÇÕES DE ENTRADA PRINTAREM QUANTOS CARACTERES LERAM E RETORNAREM EM EAX!!!!!

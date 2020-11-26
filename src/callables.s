@@ -3,13 +3,19 @@ _MSG_OVERFLOW db 'Overflow detected. Aborting process', 0Dh, 0Ah
 _MSG_OVERFLOW_SIZE EQU $-_MSG_OVERFLOW
 _DES dd 10
 _DISPLAY_INT db 0, 0, 0, 0, 0Dh, 0Ah
+_CHARACTERS_READ_1 db 'Foram lidos '
+_CHARACTERS_READ_1_SIZE EQU $-_CHARACTERS_READ_1
+_CHARACTERS_READ_2 db ' caracteres', 0Dh, 0Ah
+_CHARACTERS_READ_2_SIZE EQU $-_CHARACTERS_READ_2
 
 ; caracteres ascii
 hifen EQU 2Dh
 
 section .bss
+_INT_CACHE resd 1
 _CONVERTED_INT resb 4
 buff resb 4
+str_buff resb 100
 
 section .text
 
@@ -26,6 +32,17 @@ _INPUT:
     mov ecx, buffer
     mov edx, 4
     int 80h
+
+    ; declara a quantidade de caracteres lidos
+    mov DWORD [_INT_CACHE], eax
+    push _CHARACTERS_READ_1_SIZE
+    push _CHARACTERS_READ_1
+    call _S_OUTPUT
+    push _INT_CACHE
+    call _OUTPUT
+    push _CHARACTERS_READ_2_SIZE
+    push _CHARACTERS_READ_2
+    call _S_OUTPUT
 
     ; itera entre cada um dos caracteres lidos para converter para um número
     mov ecx, eax
@@ -61,9 +78,9 @@ _INPUT_LOOP:
     add al, cl   ; soma esse digito no montante    
     inc ebx  ; desloca o ponteiro para o próximo dígito
 
+_INPUT_LOOP_END:
     pop ecx
     loop _INPUT_LOOP
-_INPUT_LOOP_END:
     mov ebx, buffer
 
     ; aplica a negativa se for necessário
@@ -127,6 +144,16 @@ _OUTPUT_LOOP2:
     inc eax
     loop _OUTPUT_LOOP2
 
+    ; coloca espaços no que sobrou, para não ter problemas em futuras impressões
+_OUTPUT_SPACES:
+    cmp eax, 4
+    je _OUTPUT_ENTER    ; pula fora se já tiver preenchido os 4 espaços
+    mov BYTE [_DISPLAY_INT + eax], 20h
+    inc eax
+    jmp _OUTPUT_SPACES
+
+_OUTPUT_ENTER:
+
     mov eax, 4
     mov ebx, 1
     mov ecx, _DISPLAY_INT
@@ -137,9 +164,50 @@ _OUTPUT_LOOP2:
     leave
     ret 4
 
-_C_INPUT: 
+%define buffer DWORD [EBP+8]
+_C_INPUT:
+    enter 0, 0
+    ; salva o eax
+    push eax
 
+    ; lê o caracter
+    mov eax, 3
+    mov ebx, 0
+    mov ecx, buffer
+    mov edx, 1
+    int 80h
+
+    ; declara a quantidade de caracteres lidos
+    mov DWORD [_INT_CACHE], eax
+    push _CHARACTERS_READ_1_SIZE
+    push _CHARACTERS_READ_1
+    call _S_OUTPUT
+    push _INT_CACHE
+    call _OUTPUT
+    push _CHARACTERS_READ_2_SIZE
+    push _CHARACTERS_READ_2
+    call _S_OUTPUT
+    
+    pop eax
+    leave
+    ret 4
+
+%define buffer DWORD [EBP+8]
 _C_OUTPUT:
+    enter 0, 0
+    ; salva o eax
+    push eax
+
+    ; mostra os caracteres
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, buffer
+    mov edx, 1
+    int 80h
+    
+    pop eax
+    leave
+    ret 4
 
 %define size DWORD [EBP+12]
 %define buffer DWORD [EBP+8]
@@ -154,10 +222,21 @@ _S_INPUT:
     mov ecx, buffer
     mov edx, size
     int 80h
+
+    ; declara a quantidade de caracteres lidos
+    mov DWORD [_INT_CACHE], eax
+    push _CHARACTERS_READ_1_SIZE
+    push _CHARACTERS_READ_1
+    call _S_OUTPUT
+    push _INT_CACHE
+    call _OUTPUT
+    push _CHARACTERS_READ_2_SIZE
+    push _CHARACTERS_READ_2
+    call _S_OUTPUT
     
     pop eax
     leave
-    ret
+    ret 8
     
 %define size DWORD [EBP+12]
 %define buffer DWORD [EBP+8]
@@ -175,7 +254,7 @@ _S_OUTPUT:
     
     pop eax
     leave
-    ret
+    ret 8
 
 _OVERFLOW:
     mov eax, 4
@@ -195,4 +274,19 @@ _start:
     add DWORD [buff], 4
     push DWORD buff
     call _OUTPUT
+
+    push 10
+    push str_buff
+    call _S_INPUT
+    push 10
+    push str_buff
+    call _S_OUTPUT
+
+    push str_buff
+    call _C_INPUT
+    push str_buff
+    call _C_OUTPUT
+
+
+    
     jmp _OVERFLOW
