@@ -1,7 +1,11 @@
 # Define como as instruções do assembly inventado devem ser convertidas
 # para o assembly x86 NASM
-ADD @rot > ADD ebx, [@rot]
-SUB @rot > SUB ebx, [@rot]
+ADD @rot {
+    ADD ebx, [@rot]
+}
+SUB @rot {
+    SUB ebx, [@rot]
+}
 
 # Confirmar com o prof que esse mult e div são suficientes
 MULT @rot {
@@ -17,13 +21,28 @@ DIV @rot {
     MOV ebx, eax
 }
 
-JMP @rot =
-JMPN @rot > JG @rot
-JMPP @rot > JL @rot
-JMPZ @rot > JZ @rot
+JMP @rot {
+    JMP @rot
+}
+JMPN @rot {
+    CMP ebx, 0
+    JL @rot
+}
+JMPP @rot {
+    CMP ebx, 0
+    JG @rot
+}
+JMPZ @rot {
+    CMP ebx, 0
+    JZ @rot
+}
 
-LOAD @rot > MOV ebx, [@rot]
-STORE @rot > MOV DWORD [@rot], ebx
+LOAD @rot {
+    MOV ebx, [@rot]
+}
+STORE @rot {
+    MOV DWORD [@rot], ebx
+}
 COPY @a, @b {
     MOV ebx, [@a]
     MOV DWORD [@b], ebx
@@ -62,5 +81,11 @@ STOP {
     INT 80h
 }
 
-SPACE @num > (BSS) RESD @num
-CONST @val > (DATA) DD @val
+SPACE @num {
+    (BSS)
+    RESD @num
+}
+CONST @val {
+    (DATA)
+    DD @val
+}
