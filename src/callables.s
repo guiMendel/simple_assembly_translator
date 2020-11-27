@@ -3,10 +3,8 @@ _MSG_OVERFLOW db 'Overflow detected. Aborting process', 0Dh, 0Ah
 _MSG_OVERFLOW_SIZE EQU $-_MSG_OVERFLOW
 _DES dd 10
 _DISPLAY_INT db 0, 0, 0, 0, 0Dh, 0Ah
-_CHARACTERS_READ_1 db 'Foram lidos '
-_CHARACTERS_READ_1_SIZE EQU $-_CHARACTERS_READ_1
-_CHARACTERS_READ_2 db ' caracteres', 0Dh, 0Ah
-_CHARACTERS_READ_2_SIZE EQU $-_CHARACTERS_READ_2
+_CHARACTERS_READ db 'Caracteres lidos:  '
+_CHARACTERS_READ_SIZE EQU $-_CHARACTERS_READ
 
 ; caracteres ascii
 hifen EQU 2Dh
@@ -14,17 +12,13 @@ hifen EQU 2Dh
 section .bss
 _INT_CACHE resd 1
 _CONVERTED_INT resb 4
-buff resb 4
-str_buff resb 100
 
 section .text
 
 %define buffer DWORD [EBP+8]
 %define signal BYTE [EBP-1]
-_INPUT:
+_LERINTEIRO:
     enter 1, 0
-    ; salva o eax
-    push eax
 
     ; lê os 4 caracteres: 1 para sinal e 3 para números
     mov eax, 3
@@ -34,15 +28,13 @@ _INPUT:
     int 80h
 
     ; declara a quantidade de caracteres lidos
+    push eax    ; guarda para recuperar ao final da função
     mov DWORD [_INT_CACHE], eax
-    push _CHARACTERS_READ_1_SIZE
-    push _CHARACTERS_READ_1
-    call _S_OUTPUT
+    push _CHARACTERS_READ_SIZE
+    push _CHARACTERS_READ
+    call _ESCREVERSTRING
     push _INT_CACHE
-    call _OUTPUT
-    push _CHARACTERS_READ_2_SIZE
-    push _CHARACTERS_READ_2
-    call _S_OUTPUT
+    call _ESCREVERINTEIRO
 
     ; itera entre cada um dos caracteres lidos para converter para um número
     mov ecx, eax
@@ -99,10 +91,8 @@ _INPUT_COMMIT:
     
 %define buffer DWORD [EBP+8]
 %define display_begin BYTE [EBP-1]
-_OUTPUT:
+_ESCREVERINTEIRO:
     enter 1, 0
-    ; salva o eax
-    push eax
 
     ; se não for negativo, o número começa na primeira posição do display
     mov display_begin, 0
@@ -160,15 +150,12 @@ _OUTPUT_ENTER:
     mov edx, 6
     int 80h
     
-    pop eax
     leave
     ret 4
 
 %define buffer DWORD [EBP+8]
-_C_INPUT:
+_LERCHAR:
     enter 0, 0
-    ; salva o eax
-    push eax
 
     ; lê o caracter
     mov eax, 3
@@ -178,25 +165,21 @@ _C_INPUT:
     int 80h
 
     ; declara a quantidade de caracteres lidos
+    push eax    ; guarda para recuperar ao final da função
     mov DWORD [_INT_CACHE], eax
-    push _CHARACTERS_READ_1_SIZE
-    push _CHARACTERS_READ_1
-    call _S_OUTPUT
+    push _CHARACTERS_READ_SIZE
+    push _CHARACTERS_READ
+    call _ESCREVERSTRING
     push _INT_CACHE
-    call _OUTPUT
-    push _CHARACTERS_READ_2_SIZE
-    push _CHARACTERS_READ_2
-    call _S_OUTPUT
+    call _ESCREVERINTEIRO
     
     pop eax
     leave
     ret 4
 
 %define buffer DWORD [EBP+8]
-_C_OUTPUT:
+_ESCREVERCHAR:
     enter 0, 0
-    ; salva o eax
-    push eax
 
     ; mostra os caracteres
     mov eax, 4
@@ -205,16 +188,13 @@ _C_OUTPUT:
     mov edx, 1
     int 80h
     
-    pop eax
     leave
     ret 4
 
 %define size DWORD [EBP+12]
 %define buffer DWORD [EBP+8]
-_S_INPUT:
+_LERSTRING:
     enter 0, 0
-    ; salva o eax
-    push eax
 
     ; lê os caracteres
     mov eax, 3
@@ -224,15 +204,13 @@ _S_INPUT:
     int 80h
 
     ; declara a quantidade de caracteres lidos
+    push eax    ; guarda para recuperar ao final da função
     mov DWORD [_INT_CACHE], eax
-    push _CHARACTERS_READ_1_SIZE
-    push _CHARACTERS_READ_1
-    call _S_OUTPUT
+    push _CHARACTERS_READ_SIZE
+    push _CHARACTERS_READ
+    call _ESCREVERSTRING
     push _INT_CACHE
-    call _OUTPUT
-    push _CHARACTERS_READ_2_SIZE
-    push _CHARACTERS_READ_2
-    call _S_OUTPUT
+    call _ESCREVERINTEIRO
     
     pop eax
     leave
@@ -240,10 +218,8 @@ _S_INPUT:
     
 %define size DWORD [EBP+12]
 %define buffer DWORD [EBP+8]
-_S_OUTPUT:
+_ESCREVERSTRING:
     enter 0, 0
-    ; salva o eax
-    push eax
 
     ; mostra os caracteres
     mov eax, 4
@@ -252,7 +228,6 @@ _S_OUTPUT:
     mov edx, size
     int 80h
     
-    pop eax
     leave
     ret 8
 
@@ -266,27 +241,3 @@ _OVERFLOW:
     mov eax, 1
     mov ebx, 1
     int 80h
-
-global _start
-_start:
-    push DWORD buff
-    call _INPUT
-    add DWORD [buff], 4
-    push DWORD buff
-    call _OUTPUT
-
-    push 10
-    push str_buff
-    call _S_INPUT
-    push 10
-    push str_buff
-    call _S_OUTPUT
-
-    push str_buff
-    call _C_INPUT
-    push str_buff
-    call _C_OUTPUT
-
-
-    
-    jmp _OVERFLOW
