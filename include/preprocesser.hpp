@@ -17,7 +17,7 @@ class Preprocesser {
     std::map<std::string, void(*)(std::vector<asm_line>::iterator&, Preprocesser*)> pre_directive_table;
     
     // Processa uma linha, adicionando ela ao arquivo final ou executando uma diretiva de préprocessamento
-    std::string process_line(std::vector<asm_line>::iterator&);
+    asm_line process_line(std::vector<asm_line>::iterator&);
 
     public:
     const bool is_verbose() const {return verbose;}
@@ -25,7 +25,7 @@ class Preprocesser {
     // Tenta acessar o valor atribuído ao parametro pela tabela de sinônimos. Retorna o ponteiro para a entrada na tabela se houver, nullptr se não houver
     // void* resolve_synonym(std::string synonym);
     // Recebe um arquivo e cria um novo arquivo .PRE, com o código preprocessado
-    void preprocess(std::string, bool print = false);
+    std::vector<asm_line> preprocess(std::string, bool print = false);
     // Construtor
     Preprocesser(bool verbose = false);
 };

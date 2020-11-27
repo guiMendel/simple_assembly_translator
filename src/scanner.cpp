@@ -183,7 +183,6 @@ asm_line Scanner::break_line(string line, int line_number) {
 
     asm_line line_tokens;
     line_tokens.number = line_number;
-    line_tokens.opcode = -1;
     line_tokens.label = "";
     line_tokens.operation = "";
     line_tokens.operand[0] = "";

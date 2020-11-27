@@ -13,10 +13,6 @@ struct asm_line {
     std::string label;
     std::string operation;
     std::string operand[2];
-    // // Indica qual será a linha no arquivo final .obj
-    // int final_number;
-    // Indica qual o código opcode da instrução
-    int opcode;
 };
 
 // Uma especificação das exceções de montador que servem uma linha provisória

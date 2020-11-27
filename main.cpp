@@ -1,38 +1,34 @@
 #include <string.h>
 #include <iostream>
 #include "include/preprocesser.hpp"
-#include "include/two_pass.hpp"
+#include "include/translator.hpp"
+
+#define ANY(thing) (!thing.empty())
+#define HAS_OPERATION(line) ANY(line.operation)
 
 using namespace std;
+
 
 int main(int argc, char *argv[]) {
     // Descrição do uso correto
     const string help = "\
-Forneça um dos dois tipos de compilação:\n\
--p para preprocessar um arquivo .asm em um arquivo .pre\n\
--o para montar um arquivo .pre em um arquivo .obj\n\
-\n\
-Forneça também o caminho para o arquivo fonte\n\
+Forneça o caminho para o arquivo fonte\n\
 \n\
 Outras opções:\n\
 \t--print: Imprime a estrutura do programa, como construída pelo módulo scanner\n\
 \t--verbose: Imprime descrições detalhadas da execução\n\
 ";
     // Ajuda os necessitados
-    // string thing = string(argv[1]);
-    // cout << argc << " " << argv[1] << "\n" << typeid(thing).name() << " " << typeid("help").name() << endl;
-    if (argc == 2 && (strcmp(argv[1], "help") || strcmp(argv[1], "--help") || strcmp(argv[1], "-h"))) {
-        cout << "Bem vindo a este montador básico!\n" << help << endl;
+    if (argc == 2 && (!strcmp(argv[1], "help") || !strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) {
+        cout << "Bem vindo a este tradutor!\n" << help << endl;
         return 0;
     }
 
     // Garante que o uso foi correto
-    if (argc < 3 || argc > 5) {
+    if (argc < 2 || argc > 4) {
         cerr << "ERRO: Número de argumentos inválido.\n" << help << endl;
         return -1;
     }
-
-    // cout << argv[1] << endl;
 
     // Analise os parâmetros
     vector<char*> args (argv + 1, argv + argc);
@@ -40,8 +36,6 @@ Outras opções:\n\
     bool print = false;
     // Define se imprime descrições
     bool verbose = false;
-    // Define se ocorrerá montagem ou préprocessamento
-    string mode = "";
     // Guardará o caminho do arquivo fonte
     string source_file_path = "";
 
@@ -50,19 +44,13 @@ Outras opções:\n\
         for (const char* carg : args) {
             // Transforma em string
             string arg = string(carg);
-            // cout << arg << endl;
             
-            if      (arg == "--print") {
+            if (arg == "--print") {
                 print = true;
             }
 
-            else if      (arg == "--verbose") {
+            else if (arg == "--verbose") {
                 verbose = true;
-            }
-
-            else if (arg == "-p" || arg == "-o") {
-                if (mode.empty()) mode = arg;
-                else throw "Argumentos inválidos.";
             }
 
             else if (arg[0] != '-') {
@@ -74,10 +62,7 @@ Outras opções:\n\
                 throw "Argumentos inválidos.";
             }
         }
-        // Se não tiver um modo ou caminho nos argumentos, erro
-        if (mode.empty()) {
-            throw "Tipo de compilação não especificado.";
-        }
+        // Se não tiver um caminho nos argumentos, erro
         if (source_file_path.empty()) {
             throw "Arquivo fonte não especificado.";
         }
@@ -92,14 +77,25 @@ Outras opções:\n\
     }
 
     try {
-        if (mode == "-p") {
-            Preprocesser preprocesser(verbose);
-            preprocesser.preprocess(source_file_path, print);
+        Preprocesser preprocesser(verbose);
+        Translator translator(verbose);
+        
+        // translator.translate(
+        //     preprocesser.preprocess(source_file_path, print)
+        // );
+
+        cout << "Estrutura do programa: {" << endl;
+        for (const asm_line line : preprocesser.preprocess(source_file_path, print))
+        {
+            cout << "\tLinha " << line.number << ": {";
+            string output = "";
+            if ANY(line.label) output += "label: \"" + line.label + "\", ";
+            if HAS_OPERATION(line) output += "operation: \"" + line.operation + "\", ";
+            if ANY(line.operand[0]) output += "operand1: \"" + line.operand[0] + "\", ";
+            if ANY(line.operand[1]) output += "operand2: \"" + line.operand[1] + "\", ";
+            cout << output.substr(0, output.length() - 2) << "}" << endl;
         }
-        else if (mode == "-o") {
-            TwoPassAlgorithm assembler(verbose);
-            assembler.assemble(source_file_path, print);
-        }
+        cout << "}" << endl;
     }
     catch (exception &error) {
         cerr << __FILE__ << ":" << __LINE__ << "> ERRO:\n" << error.what() << endl;

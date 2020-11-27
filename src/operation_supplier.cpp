@@ -1,57 +1,8 @@
-#include <iostream>
-#include <fstream>
 #include "../include/operation_supplier.hpp"
 
 using namespace std;
 
 #define NOT_EMPTY(thing) (!thing.empty())
-
-auto OperationSupplier::supply_instructions() -> map<string, int[2]> {
-    fstream data_source("data/instructions.txt");
-    
-    if (!data_source.is_open()) {
-        throw invalid_argument("Não foi possível abrir o arquivo de instruções em \"data/instructions.txt\"");
-    }
-
-    map<string, int[2]> instruction_table;
-
-    string line;
-    int line_number = 0;
-    // Para cada linha do arquivo, gera uma entrada na tabela
-    try {
-        while (getline(data_source, line)) {
-            line_number++;
-
-            // Comentários
-            if (line[0] == '#') continue;
-            size_t opcode_mark = line.find(':');
-            size_t size_mark = line.find('>');
-
-            string instruction = line.substr(0, opcode_mark);
-            int opcode = stoi(line.substr(opcode_mark + 1, size_mark));
-            int size = stoi(line.substr(size_mark + 1));
-
-            instruction_table[instruction][0] = opcode;
-            instruction_table[instruction][1] = size;
-        }
-    }
-    catch (invalid_argument error) {
-        throw invalid_argument("Entrada inválida no arquivo de instruções, na linha " + to_string(line_number) + ": " + error.what());
-    }
-
-    return instruction_table;
-}
-
-auto OperationSupplier::supply_directives() -> map<string, void(*)(vector<asm_line>::iterator&, int&)>{
-    // Popula a tabela de diretivas
-    // Implementação do padrão de projeto Command
-    map<string, void(*)(vector<asm_line>::iterator&, int&)> directive_table;
-    
-    directive_table["SPACE"] = &eval_SPACE;
-    directive_table["CONST"] = &eval_CONST;
-    
-    return directive_table;
-}
 
 auto OperationSupplier::supply_pre_directives() -> map<string, void(*)(vector<asm_line>::iterator&, Preprocesser*)> {
     // Popula a tabela de diretivas de préprocessamento
@@ -159,50 +110,4 @@ void OperationSupplier::eval_IF(vector<asm_line>::iterator& line_iterator, Prepr
         );
     }
     line.label = "";
-}
-
-// DIRETIVAS NORMAIS
-
-void OperationSupplier::eval_SPACE(vector<asm_line>::iterator& line_iterator, int& line_number) {
-    asm_line &expression = *line_iterator;
-
-    expression.opcode = 0;
-    line_number += 1;
-
-    // Certifica o bom uso dos parâmetros
-    if (NOT_EMPTY(expression.operand[0])) {
-        throw MounterException(expression.number, "sintático",
-            "A diretiva SPACE não recebe parâmetros"
-        );
-    }
-}
-
-void OperationSupplier::eval_CONST(vector<asm_line>::iterator& line_iterator, int& line_number) {
-    asm_line &expression = *line_iterator;
-
-    // Coloca um 0 preventivo, em caso de exceção
-    expression.opcode = 0;
-    line_number += 1;
-
-    // Certifica o bom uso dos parâmetros
-    if (expression.operand[0].empty() || NOT_EMPTY(expression.operand[1])) {
-        throw MounterException(expression.number, "sintático",
-            "A diretiva CONST recebe exatamente um parâmetro"
-        );
-    }
-
-    string operand = expression.operand[0];
-    expression.operand[0] = "";
-
-    // Insere a constante no espaço
-    int constant;
-    try {
-        constant = stoi(operand);
-    }
-    catch (invalid_argument error) {
-        throw MounterException(expression.number, "léxico",
-            "A diretiva CONST recebe um número como parâmetro. Valor recebido: " + expression.operand[0]
-        );
-    }
-    expression.opcode = constant;
 }
