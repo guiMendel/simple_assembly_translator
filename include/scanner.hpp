@@ -13,6 +13,8 @@ struct asm_line {
     std::string label;
     std::string operation;
     std::string operand[2];
+    // O offset aplicado a cada operando
+    int offset[2];
 };
 
 // Uma especificação das exceções de montador que servem uma linha provisória
@@ -45,7 +47,7 @@ class Scanner {
     Scanner(bool report = true) : report_all_errors(report) {}
     // Recebe um arquivo e retorna a estrutura do programa. Recebe uma opção de imprimir a estrutura resultante ou não. Recebe uma referência string na qual imprime todos os erros encontrados.
     std::vector<asm_line> scan(std::string, std::string&, bool print = false);
-    // Recebe uma linha e um vetor de rótulos, e encaixa os rótulos na linha.
+    // Recebe uma linha e um rótulo, e encaixa o rótulo na linha.
     void assign_label(asm_line&, std::string&);
 };
 

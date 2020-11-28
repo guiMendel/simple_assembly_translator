@@ -9,26 +9,26 @@ alguns erros no arquivo fonte podem impedir ou tornar ambíguo o pré-processame
 ########## EXECUÇÃO ##########
 
 Para compilar, basta executar no terminal:
-g++ assembler.cpp src/*.cpp -o montador
+g++ main.cpp src/*.cpp -o tradutor
 
 Em seguida, para pré-processar:
-./montador <arquivo.asm> -p
+./tradutor <arquivo.asm> -p
 
 E para montar:
-./montador <arquivo.pre> -o
+./tradutor <arquivo.pre> -o
 
 Existem 2 parâmetros opcionais: --print e --verbose, que mostram detalhes do processamento, em cada uma das etapas.
 O print mostra a estrutura do programa como lida pelo módulo scanner, e o verbose mostra alguns detalhes específicos.
 
 ########## MÓDULOS ##########
-O arquivo assembler.cpp simplesmente recebe as instruções do usuário e invoca OU o módulo de montagem (two_pass.cpp) OU o módulo de préprocessamento (preprocesser.cpp)
+O arquivo main.cpp simplesmente recebe as instruções do usuário e invoca OU o módulo de montagem (two_pass.cpp) OU o módulo de préprocessamento (preprocesser.cpp)
 
 >> scanner.cpp
 Lê o arquivo especificado pelo usuário e o transforma numa estrutura de vetor de structs (cada struct representa uma linha), que será utilizado pelos outros módulos.
 Pode retornar alguns erros para os módulos levantarem.
 
 >> operation_supplier.cpp
-Lê o arquivo instructions.txt e descobre as instruções do assembler.
+Lê o arquivo instructions.txt e descobre as instruções do main.
 Tem a definição e o corpo de execução das diretivas.
 Fornece os outros módulos com as operações (instruções ou diretivas) que eles necessitam.
 

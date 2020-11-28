@@ -25,7 +25,7 @@ Preprocesser::Preprocesser(bool verbose/* = false */) : verbose(verbose)  {
 vector<asm_line> Preprocesser::preprocess(string path, bool print /* = false */)
 {
     // O parâmtero solicita que o scanner não levante erros
-    Scanner scanner(false);
+    Scanner scanner(true);
     // Coleta os erros lançados
     string error_log = "";
 

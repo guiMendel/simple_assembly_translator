@@ -92,7 +92,9 @@ Outras opções:\n\
             if ANY(line.label) output += "label: \"" + line.label + "\", ";
             if HAS_OPERATION(line) output += "operation: \"" + line.operation + "\", ";
             if ANY(line.operand[0]) output += "operand1: \"" + line.operand[0] + "\", ";
+            if (line.offset[0] != 0) output += "offset1: \"" + to_string(line.offset[0]) + "\", ";
             if ANY(line.operand[1]) output += "operand2: \"" + line.operand[1] + "\", ";
+            if (line.offset[1] != 0) output += "offset2: \"" + to_string(line.offset[1]) + "\", ";
             cout << output.substr(0, output.length() - 2) << "}" << endl;
         }
         cout << "}" << endl;

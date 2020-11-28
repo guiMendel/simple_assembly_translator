@@ -151,7 +151,9 @@ vector<asm_line> Scanner::scan (string source_path, string &error_log, bool prin
             if ANY(line.label) output += "label: \"" + line.label + "\", ";
             if HAS_OPERATION(line) output += "operation: \"" + line.operation + "\", ";
             if ANY(line.operand[0]) output += "operand1: \"" + line.operand[0] + "\", ";
+            if (line.offset[0] != 0) output += "offset1: \"" + to_string(line.offset[0]) + "\", ";
             if ANY(line.operand[1]) output += "operand2: \"" + line.operand[1] + "\", ";
+            if (line.offset[1] != 0) output += "offset2: \"" + to_string(line.offset[1]) + "\", ";
             cout << output.substr(0, output.length() - 2) << "}" << endl;
         }
         cout << "}" << endl;
@@ -187,6 +189,8 @@ asm_line Scanner::break_line(string line, int line_number) {
     line_tokens.operation = "";
     line_tokens.operand[0] = "";
     line_tokens.operand[1] = "";
+    line_tokens.offset[0] = 0;
+    line_tokens.offset[1] = 0;
 
     // O batch de exceções desta linha. Ao final, uma exceção estática é lançada, que aponta para uma corrente de exeções dinâmicas
     vector<ScannerException> exceptions;
@@ -194,7 +198,6 @@ asm_line Scanner::break_line(string line, int line_number) {
     stringstream ss(line);
     // Vamos ler cada token e colocá-lo em seu lugar
     string token;
-    // string formatted_line = "";
 
     // Indica se um rótulo foi adicionado
     bool label_ok = false;
@@ -206,6 +209,10 @@ asm_line Scanner::break_line(string line, int line_number) {
     bool comma_ok = false;
     // Indica se já adicionou o operando 2
     bool operand2_ok = false;
+    // Indica se está esperando um '+' ou fom da linha
+    bool expecting_plus = false;
+    // Indica se está esperando um offset
+    bool expecting_offset = false;
 
     // Indica se já encontrou todos os elementos necessários
     bool finished = false;
@@ -231,8 +238,8 @@ asm_line Scanner::break_line(string line, int line_number) {
             }
         }
 
-        // Se já tiver lido todos os tokens possíveis (até os 2 operandos), é erro! Esse token não deveria existir
-        if (operand2_ok) {
+        // Se já tiver lido todos os tokens possíveis (até os 2 operandos e o último offset), é erro! Esse token não deveria existir
+        if (operand2_ok && !expecting_plus && !expecting_offset) {
             ScannerException error (line_number, "sintático", NON_OMITABLE, line_tokens,
                 string("Token \"" + token + "\" inesperado")
             );
@@ -334,10 +341,12 @@ asm_line Scanner::break_line(string line, int line_number) {
                 }
                 comma_ok = true;
                 token.pop_back();
+                // Registra o offset nulo
+                line_tokens.offset[0] = 0;
             }
-            // Se não, não deve haver um segundo operando
+            // Se não, ou não deve ser fim da linha, ou espera um offset
             else {
-                operand2_ok = true;
+                expecting_plus = true;
             }
 
             // Denuncia tokens inválidos
@@ -355,7 +364,70 @@ asm_line Scanner::break_line(string line, int line_number) {
             continue;
         }
 
+        if (expecting_plus) {
+            if (token == "+"s) {
+                expecting_plus = false;
+                expecting_offset = true;
+                continue;
+            }
+            else {
+                ScannerException error (line_number, "sintático", NON_OMITABLE, line_tokens,
+                    string("Token \"" + token + "\" inesperado")
+                );
+                exceptions.push_back(error);
+                break;
+            }
+        }
+
+        if (expecting_offset) {
+            // Verifica a existência de vírgula
+            if (token[token.length() - 1] == ',') {
+                // cout << "<" << token << ">" << endl;
+                // Verifica se já tinha uma vírgula
+                if (comma_ok) {
+                    ScannerException error (line_number, "sintático", NON_OMITABLE, line_tokens,
+                        string("Mais de uma vírgula na mesma linha")
+                    );
+                    exceptions.push_back(error);
+                }
+                comma_ok = true;
+                token.pop_back();
+            }
+            
+            int offset;
+            // Garante que o offset seja um número
+            try {
+                offset = stoi(token);
+            }
+            catch (...) {
+                ScannerException error (line_number, "léxico", NON_OMITABLE, line_tokens,
+                    string("Offset \"" + token + "\" não é um inteiro")
+                );
+                exceptions.push_back(error);
+                break;
+            }
+            
+            // Verifica para qual operando é este offset
+            if (operand2_ok) {
+                line_tokens.offset[1] = offset;
+            }
+            else {
+                line_tokens.offset[0] = offset;
+            }
+            
+            expecting_offset = false;
+            continue;
+        }
+
         // É o último operando
+        // Garante a presença da vírgula
+        if (!comma_ok) {
+            ScannerException error (line_number, "sintático", NON_OMITABLE, line_tokens,
+                string("Token \"" + token + "\" inesperado")
+            );
+            exceptions.push_back(error);
+            break;
+        }
         // Denuncia tokens inválidos
         if (regex_search(token, regex("[^A-Z0-9_-]"))) {
             asm_line dummy_line;
@@ -367,7 +439,18 @@ asm_line Scanner::break_line(string line, int line_number) {
         }
         line_tokens.operand[1] = token;
         operand2_ok = true;
-        // Agora temos que nos certificar de que o próximo token comece com um comentário
+        // Se prepara para receber um offset
+        expecting_plus = true;
+    }
+
+    // Verifica se esperava o offset
+    if (expecting_offset) {
+        asm_line dummy_line;
+        dummy_line.operation = "";
+        ScannerException error (line_number, "sintático", OMITABLE, dummy_line,
+            string("Esperava um inteiro como offset após o '+'")
+        );
+        exceptions.push_back(error);
     }
 
     // Se tiver verificado um vírgula mas nenhum segundo operando, é erro
@@ -378,7 +461,7 @@ asm_line Scanner::break_line(string line, int line_number) {
             string("Esperava um segundo argumento após vírgula")
         );
         exceptions.push_back(error);
-    };
+    }
 
     if (exceptions.empty()) {
         return line_tokens;
