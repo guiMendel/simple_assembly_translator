@@ -78,10 +78,11 @@ Outras opções:\n\
 
     try {
         Preprocesser preprocesser(verbose);
-        Translator translator(verbose);
+        Translator translator("assets/translation_table.txt", verbose);
         
         // translator.translate(
-        //     preprocesser.preprocess(source_file_path, print)
+        //     preprocesser.preprocess(source_file_path, print),
+        //     "x86_" + source_file_path
         // );
 
         cout << "Estrutura do programa: {" << endl;
@@ -98,6 +99,8 @@ Outras opções:\n\
             cout << output.substr(0, output.length() - 2) << "}" << endl;
         }
         cout << "}" << endl;
+
+        translator.print_table();
     }
     catch (exception &error) {
         cerr << __FILE__ << ":" << __LINE__ << "> ERRO:\n" << error.what() << endl;

@@ -34,7 +34,7 @@ JMPP @rot {
 }
 JMPZ @rot {
     CMP ebx, 0
-    JZ @rot
+    JE @rot
 }
 
 LOAD @rot {
@@ -44,8 +44,8 @@ STORE @rot {
     MOV DWORD [@rot], ebx
 }
 COPY @a, @b {
-    MOV ebx, [@a]
-    MOV DWORD [@b], ebx
+    MOV eax, [@a]
+    MOV DWORD [@b], eax
 }
 
 INPUT @rot {
@@ -82,10 +82,10 @@ STOP {
 }
 
 SPACE @num {
-    (BSS)
+    (bss)
     RESD @num
 }
 CONST @val {
-    (DATA)
+    (data)
     DD @val
 }
