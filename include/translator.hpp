@@ -27,16 +27,25 @@ struct translation_entry {
 class Translator {
     // Define se descrções serão impressas
     const bool verbose;
-    // Armazena a table a de tradução
+    // Armazena a tabela de tradução
     std::map<std::string, translation_entry> translation_table;
+    // Armaze o caminho onde se encontra o arquivo de funções auxiliares
+    std::string auxiliary_functions_path;
     
+    // Lê do arquivo fornecido a tabela de tradução
     void read_table(std::string path);
+
+    // substitui os parâmetros da linha
+    void parse_params(std::string&, const std::string[2], const asm_line&);
 
     public:
     // Realiza a tradução da estrutura fornecida para a linguagem assembly IA32
-    void translate(std::vector<asm_line>&, std::string);
+    void translate(const std::vector<asm_line>&, std::string);
     
-    Translator(std::string path, bool verbose = false) : verbose(verbose) { read_table(path); };
+    Translator(std::string assets_path, bool verbose = false) :
+        verbose(verbose),
+        auxiliary_functions_path(assets_path + "/callables.s")
+    { read_table(assets_path + "/translation_table.txt"); }
 
     void print_table();
 };

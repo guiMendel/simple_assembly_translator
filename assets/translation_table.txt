@@ -1,77 +1,77 @@
 # Define como as instruções do assembly inventado devem ser convertidas
 # para o assembly x86 NASM
-ADD @rot {
-    ADD ebx, [@rot]
+ADD <rot> {
+    ADD ebx, [<rot>]
 }
-SUB @rot {
-    SUB ebx, [@rot]
+SUB <rot> {
+    SUB ebx, [<rot>]
 }
 
 # Confirmar com o prof que esse mult e div são suficientes
-MULT @rot {
+MULT <rot> {
     MOV eax, ebx
-    IMULT DWORD [@rot]
+    IMUL DWORD [<rot>]
     JO _OVERFLOW
     MOV ebx, eax
 }
-DIV @rot {
+DIV <rot> {
     MOV eax, ebx
     CDQ
-    IDIV DWORD [@rot]
+    IDIV DWORD [<rot>]
     MOV ebx, eax
 }
 
-JMP @rot {
-    JMP @rot
+JMP <rot> {
+    JMP <rot>
 }
-JMPN @rot {
+JMPN <rot> {
     CMP ebx, 0
-    JL @rot
+    JL <rot>
 }
-JMPP @rot {
+JMPP <rot> {
     CMP ebx, 0
-    JG @rot
+    JG <rot>
 }
-JMPZ @rot {
+JMPZ <rot> {
     CMP ebx, 0
-    JE @rot
+    JE <rot>
 }
 
-LOAD @rot {
-    MOV ebx, [@rot]
+LOAD <rot> {
+    MOV ebx, [<rot>]
 }
-STORE @rot {
-    MOV DWORD [@rot], ebx
+STORE <rot> {
+    MOV DWORD [<rot>], ebx
 }
-COPY @a, @b {
-    MOV eax, [@a]
-    MOV DWORD [@b], eax
+COPY <a>, <b> {
+    MOV eax, [<a>]
+    MOV DWORD [<b>], eax
 }
 
-INPUT @rot {
-    PUSH DWORD @rot
+INPUT <rot> {
+    PUSH DWORD <rot>
     CALL _LERINTEIRO
 }
-OUTPUT @rot {
-    PUSH DWORD @rot
+OUTPUT <rot> {
+    PUSH DWORD <rot>
     CALL _ESCREVERINTEIRO
 }
-C_INPUT @rot {
-    PUSH DWORD @rot
+C_INPUT <rot> {
+    PUSH DWORD <rot>
     CALL _LERCHAR
 }
-C_OUTPUT @rot {
-    PUSH DWORD @rot
+C_OUTPUT <rot> {
+    PUSH DWORD <rot>
     CALL _ESCREVERCHAR
 }
-S_INPUT @rot, @size {
-    PUSH DWORD @size
-    PUSH DWORD @rot
+S_INPUT <rot>, <size> {
+    PUSH DWORD <size>
+    PUSH DWORD <rot>
     CALL _LERSTRING
 }
-S_OUTPUT @rot, @size {
-    PUSH DWORD @size
-    PUSH DWORD @rot
+S_OUTPUT <rot>, <size> {
+    PUSH DWORD <size>
+    PUSH DWORD <rot>
     CALL _ESCREVERSTRING
 }
 
@@ -81,11 +81,11 @@ STOP {
     INT 80h
 }
 
-SPACE @num {
+SPACE <num> {
     (bss)
-    RESD @num
+    RESD <num>
 }
-CONST @val {
+CONST <val> {
     (data)
-    DD @val
+    DD <val>
 }

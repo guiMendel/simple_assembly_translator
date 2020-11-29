@@ -77,30 +77,33 @@ Outras opções:\n\
     }
 
     try {
-        Preprocesser preprocesser(verbose);
-        Translator translator("assets/translation_table.txt", verbose);
+        // Se o caminho fornecido for em outra pasta, tira a pasta do caminho para o novo arquivo
+        string new_file_path = source_file_path.substr(source_file_path.find_last_of("/") + 1);
         
-        // translator.translate(
-        //     preprocesser.preprocess(source_file_path, print),
-        //     "x86_" + source_file_path
-        // );
+        Preprocesser preprocesser(verbose);
+        Translator translator("assets", verbose);
+        
+        translator.translate(
+            preprocesser.preprocess(source_file_path, print),
+            "x86_" + new_file_path
+        );
 
-        cout << "Estrutura do programa: {" << endl;
-        for (const asm_line line : preprocesser.preprocess(source_file_path, print))
-        {
-            cout << "\tLinha " << line.number << ": {";
-            string output = "";
-            if ANY(line.label) output += "label: \"" + line.label + "\", ";
-            if HAS_OPERATION(line) output += "operation: \"" + line.operation + "\", ";
-            if ANY(line.operand[0]) output += "operand1: \"" + line.operand[0] + "\", ";
-            if (line.offset[0] != 0) output += "offset1: \"" + to_string(line.offset[0]) + "\", ";
-            if ANY(line.operand[1]) output += "operand2: \"" + line.operand[1] + "\", ";
-            if (line.offset[1] != 0) output += "offset2: \"" + to_string(line.offset[1]) + "\", ";
-            cout << output.substr(0, output.length() - 2) << "}" << endl;
-        }
-        cout << "}" << endl;
+        // cout << "Estrutura do programa: {" << endl;
+        // for (const asm_line line : preprocesser.preprocess(source_file_path, print))
+        // {
+        //     cout << "\tLinha " << line.number << ": {";
+        //     string output = "";
+        //     if ANY(line.label) output += "label: \"" + line.label + "\", ";
+        //     if HAS_OPERATION(line) output += "operation: \"" + line.operation + "\", ";
+        //     if ANY(line.operand[0]) output += "operand1: \"" + line.operand[0] + "\", ";
+        //     if (line.offset[0] != 0) output += "offset1: \"" + to_string(line.offset[0]) + "\", ";
+        //     if ANY(line.operand[1]) output += "operand2: \"" + line.operand[1] + "\", ";
+        //     if (line.offset[1] != 0) output += "offset2: \"" + to_string(line.offset[1]) + "\", ";
+        //     cout << output.substr(0, output.length() - 2) << "}" << endl;
+        // }
+        // cout << "}" << endl;
 
-        translator.print_table();
+        if (verbose) translator.print_table();
     }
     catch (exception &error) {
         cerr << __FILE__ << ":" << __LINE__ << "> ERRO:\n" << error.what() << endl;

@@ -1,3 +1,4 @@
+; delcaração de rótulos das funções auxiliares de leitura e escrita
 section .data
 _MSG_OVERFLOW db 'Overflow detected. Aborting process', 0Dh, 0Ah
 _MSG_OVERFLOW_SIZE EQU $-_MSG_OVERFLOW
@@ -14,7 +15,7 @@ _INT_CACHE resd 1
 _CONVERTED_INT resb 4
 
 section .text
-
+; definição das funções auxiliares de leitura e escrita
 %define buffer DWORD [EBP+8]
 %define signal BYTE [EBP-1]
 _LERINTEIRO:

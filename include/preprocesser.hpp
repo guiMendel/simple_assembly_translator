@@ -25,7 +25,7 @@ class Preprocesser {
     // Tenta acessar o valor atribuído ao parametro pela tabela de sinônimos. Retorna o ponteiro para a entrada na tabela se houver, nullptr se não houver
     // void* resolve_synonym(std::string synonym);
     // Recebe um arquivo e cria um novo arquivo .PRE, com o código preprocessado
-    std::vector<asm_line> preprocess(std::string, bool print = false);
+    const std::vector<asm_line> preprocess(std::string, bool print = false);
     // Construtor
     Preprocesser(bool verbose = false);
 };

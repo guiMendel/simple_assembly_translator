@@ -22,8 +22,7 @@ Preprocesser::Preprocesser(bool verbose/* = false */) : verbose(verbose)  {
     pre_directive_table = supplier.supply_pre_directives();
 }
 
-vector<asm_line> Preprocesser::preprocess(string path, bool print /* = false */)
-{
+const vector<asm_line> Preprocesser::preprocess(string path, bool print /* = false */) {
     // O parâmtero solicita que o scanner não levante erros
     Scanner scanner(true);
     // Coleta os erros lançados
@@ -45,8 +44,8 @@ vector<asm_line> Preprocesser::preprocess(string path, bool print /* = false */)
         try {
             // cout << "Processando linha " << line_iterator->number << endl;
             const asm_line new_line = process_line(line_iterator);
-            // valores negativos representam uma linha que não deve ir para o arquivo final
-            if (new_line.number > 0) processed_lines.push_back(new_line);
+            // valores negativos representam uma linha que não deve ir para o arquivo final, e a operaão section não precisa ser traduzida
+            if (new_line.number > 0 && new_line.operation != "SECTION") processed_lines.push_back(new_line);
         }
         catch (MounterException error) {
             // Coleta informações sobre o erro
