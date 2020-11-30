@@ -20,6 +20,8 @@ section .text
 %define signal BYTE [EBP-1]
 _LERINTEIRO:
     enter 1, 0
+    ; salva o acumulador
+    push ebx
 
     ; lê os 4 caracteres: 1 para sinal e 3 para números
     mov eax, 3
@@ -59,7 +61,7 @@ _INPUT_LOOP:
     mov ecx, 0  ; zera o leitor de digito
     mov cl, [ebx] ; lê o char da posição indicada
 
-    ; descarta o enter
+    ; descarta o \n
     cmp cl, 0Ah
     je _INPUT_LOOP_END
     cmp cl, 0Dh
@@ -86,7 +88,8 @@ _INPUT_LOOP_END:
 _INPUT_COMMIT:    
     mov [ebx], eax ; armazena o que foi lido
     
-    pop eax
+    pop eax ; numero de coisas lidas
+    pop ebx ; restora o acumulador
     leave
     ret 4
     
@@ -94,6 +97,8 @@ _INPUT_COMMIT:
 %define display_begin BYTE [EBP-1]
 _ESCREVERINTEIRO:
     enter 1, 0
+    ; salva o acumulador
+    push ebx
 
     ; se não for negativo, o número começa na primeira posição do display
     mov display_begin, 0
@@ -151,12 +156,15 @@ _OUTPUT_ENTER:
     mov edx, 6
     int 80h
     
+    pop ebx ; restora o acumulador
     leave
     ret 4
 
 %define buffer DWORD [EBP+8]
 _LERCHAR:
     enter 0, 0
+    ; salva o acumulador
+    push ebx
 
     ; lê o caracter
     mov eax, 3
@@ -175,12 +183,15 @@ _LERCHAR:
     call _ESCREVERINTEIRO
     
     pop eax
+    pop ebx ; restora o acumulador
     leave
     ret 4
 
 %define buffer DWORD [EBP+8]
 _ESCREVERCHAR:
     enter 0, 0
+    ; salva o acumulador
+    push ebx
 
     ; mostra os caracteres
     mov eax, 4
@@ -189,6 +200,7 @@ _ESCREVERCHAR:
     mov edx, 1
     int 80h
     
+    pop ebx ; restora o acumulador
     leave
     ret 4
 
@@ -196,6 +208,8 @@ _ESCREVERCHAR:
 %define buffer DWORD [EBP+8]
 _LERSTRING:
     enter 0, 0
+    ; salva o acumulador
+    push ebx
 
     ; lê os caracteres
     mov eax, 3
@@ -214,6 +228,7 @@ _LERSTRING:
     call _ESCREVERINTEIRO
     
     pop eax
+    pop ebx ; restora o acumulador
     leave
     ret 8
     
@@ -221,6 +236,8 @@ _LERSTRING:
 %define buffer DWORD [EBP+8]
 _ESCREVERSTRING:
     enter 0, 0
+    ; salva o acumulador
+    push ebx
 
     ; mostra os caracteres
     mov eax, 4
@@ -229,6 +246,7 @@ _ESCREVERSTRING:
     mov edx, size
     int 80h
     
+    pop ebx ; restora o acumulador
     leave
     ret 8
 
