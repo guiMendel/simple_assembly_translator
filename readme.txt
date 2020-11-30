@@ -1,6 +1,3 @@
-Nome do aluno: Guilherme Mendel de Almeida Nascimento
-Matrícula: 170143970
-
 ########## EXECUÇÃO ##########
 
 Para compilar, basta executar no terminal:
