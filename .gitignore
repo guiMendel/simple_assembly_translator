@@ -39,3 +39,5 @@ montador
 explanation.txt
 tradutor
 Dockerfile
+x86_*
+Makefile

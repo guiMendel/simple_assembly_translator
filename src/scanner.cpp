@@ -41,10 +41,21 @@ vector<asm_line> Scanner::scan (string source_path, string &error_log, bool prin
         line_number++
     ) {
         try {
-            // Remove o /r da linha
-            // line.pop_back();
+            // cout << "Linha não formatada: \"" << line << "\"" << endl;
+            // Tratamos \t, \r e \n como espaços
+            replace(line.begin(), line.end(), '\t', ' ');
+            replace(line.begin(), line.end(), '\n', ' ');
+            replace(line.begin(), line.end(), '\r', ' ');
+
+            // Remove espaços antes e depois da linha (se houver algo além de espaços)
+            if (line.find_first_not_of(" ") != string::npos) {
+                line = line.substr(line.find_first_not_of(" "));
+                line = line.substr(0, line.find_last_not_of(" ") + 1);
+            }
+
+            // Descarta linhas vazias e comentários
             // cout << "Line: <" << line << ">" << endl;
-            if (line.empty()) continue;
+            if (line.empty() || line[0] == ';') continue;
             
             // Separa a linha em elementos
             asm_line broken_line = break_line(line, line_number);
@@ -178,11 +189,6 @@ void Scanner::assign_label(asm_line &line, string &stray_label) {
 }
 
 asm_line Scanner::break_line(string line, int line_number) {
-    // cout << "Linha não formatada: \"" << line << "\"" << endl;
-
-    // Tratamos \t como espaços
-    replace(line.begin(), line.end(), '\t', ' ');
-
     asm_line line_tokens;
     line_tokens.number = line_number;
     line_tokens.label = "";
