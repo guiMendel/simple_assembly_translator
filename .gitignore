@@ -37,3 +37,5 @@ test*
 .vscode
 montador
 explanation.txt
+tradutor
+Dockerfile
