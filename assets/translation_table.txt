@@ -65,13 +65,13 @@ C_OUTPUT <rot> {
     CALL _ESCREVERCHAR
 }
 S_INPUT <rot>, <size> {
-    PUSH DWORD <size>
     PUSH DWORD <rot>
+    PUSH DWORD <size>
     CALL _LERSTRING
 }
 S_OUTPUT <rot>, <size> {
-    PUSH DWORD <size>
     PUSH DWORD <rot>
+    PUSH DWORD <size>
     CALL _ESCREVERSTRING
 }
 

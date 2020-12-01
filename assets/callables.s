@@ -33,8 +33,8 @@ _LERINTEIRO:
     ; declara a quantidade de caracteres lidos
     push eax    ; guarda para recuperar ao final da função
     mov DWORD [_INT_CACHE], eax
-    push _CHARACTERS_READ_SIZE
     push _CHARACTERS_READ
+    push _CHARACTERS_READ_SIZE
     call _ESCREVERSTRING
     push _INT_CACHE
     call _ESCREVERINTEIRO
@@ -176,8 +176,8 @@ _LERCHAR:
     ; declara a quantidade de caracteres lidos
     push eax    ; guarda para recuperar ao final da função
     mov DWORD [_INT_CACHE], eax
-    push _CHARACTERS_READ_SIZE
     push _CHARACTERS_READ
+    push _CHARACTERS_READ_SIZE
     call _ESCREVERSTRING
     push _INT_CACHE
     call _ESCREVERINTEIRO
@@ -204,8 +204,8 @@ _ESCREVERCHAR:
     leave
     ret 4
 
-%define size DWORD [EBP+12]
-%define buffer DWORD [EBP+8]
+%define buffer DWORD [EBP+12]
+%define size DWORD [EBP+8]
 _LERSTRING:
     enter 0, 0
     ; salva o acumulador
@@ -221,8 +221,8 @@ _LERSTRING:
     ; declara a quantidade de caracteres lidos
     push eax    ; guarda para recuperar ao final da função
     mov DWORD [_INT_CACHE], eax
-    push _CHARACTERS_READ_SIZE
     push _CHARACTERS_READ
+    push _CHARACTERS_READ_SIZE
     call _ESCREVERSTRING
     push _INT_CACHE
     call _ESCREVERINTEIRO
@@ -232,8 +232,8 @@ _LERSTRING:
     leave
     ret 8
     
-%define size DWORD [EBP+12]
-%define buffer DWORD [EBP+8]
+%define buffer DWORD [EBP+12]
+%define size DWORD [EBP+8]
 _ESCREVERSTRING:
     enter 0, 0
     ; salva o acumulador
