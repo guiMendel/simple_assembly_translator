@@ -78,14 +78,16 @@ Outras opções:\n\
 
     try {
         // Se o caminho fornecido for em outra pasta, tira a pasta do caminho para o novo arquivo
-        string new_file_path = source_file_path.substr(source_file_path.find_last_of("/") + 1);
+        string new_file_name = source_file_path.substr(source_file_path.find_last_of("/") + 1);
+        // Arranca fora a desgraça da extensão
+        new_file_name = new_file_name.substr(0, new_file_name.find_first_of('.'));
         
         Preprocesser preprocesser(verbose);
         Translator translator("assets", verbose);
         
         translator.translate(
             preprocesser.preprocess(source_file_path, print),
-            "x86_" + new_file_path
+            "x86_" + new_file_name + ".s"
         );
 
         // cout << "Estrutura do programa: {" << endl;
